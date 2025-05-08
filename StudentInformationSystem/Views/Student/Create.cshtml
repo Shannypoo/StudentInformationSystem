@@ -1,0 +1,19 @@
+﻿@model StudentInformationSystem.Models.StudentClass
+
+<h1>Create Pet</h1>
+
+<form asp-action="Create" method="post">
+	<div class="form-group">
+		<label asp-for="Name" class="control-label">Name</label>
+		<input asp-for="Name" class="form-control" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Age" class="control-label">Age</label>
+		<input asp-for="Age" class="form-control" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Course" class="control-label">Course</label>
+		<input asp-for="Course" class="form-control" />
+	</div>
+	<button type="submit" class="btn btn-primary">Create</button>
+</form>
