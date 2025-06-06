@@ -1,84 +1,122 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudentInformationSystem.Models;
 
 namespace StudentInformationSystem.Controllers
 {
 	public class StudentController : Controller
 	{
-		//List
-		public static List<StudentClass> students = new List<StudentClass>();
-		public IActionResult Index()
+		private readonly AppDbContext _context;
+		public StudentController(AppDbContext context)
 		{
+			_context = context;
+		}
 
+		public async Task<IActionResult> Index()
+		{
+			// Get all students from DB and pass to view
+			var students = await _context.Students.ToListAsync();
 			return View(students);
 		}
-		public IActionResult Create() 
+
+		[HttpGet]
+		public IActionResult RegisterStudent()
 		{
+			// Show empty registration form
 			return View();
 		}
-		[HttpPost]
-		//Add Students
-		public IActionResult Create(StudentClass student) 
-		{
 
+		[HttpPost]
+		public async Task<IActionResult> RegisterStudent(StudentClass student)
+		{
 			if (ModelState.IsValid)
 			{
-				student.StudentID = students.Count + 1;
-				students.Add(student);
-				return RedirectToAction("Index");
+				// Add student to DB and save
+				_context.Add(student);
+				await _context.SaveChangesAsync();
 
+				// Redirect to student list after successful registration
+				return RedirectToAction(nameof(Index));
 			}
+			// If validation fails, show form again with validation messages
 			return View(student);
 		}
-		//Edit Students
-		public IActionResult Edit(int id)
-		{ 
-			var student = students.FirstOrDefault(p => p.StudentID == id);
+
+		[HttpGet]
+		public async Task<IActionResult> Edit(int? id)
+		{
+			if (id == null)
+				return NotFound();
+
+			// Find student by id
+			var student = await _context.Students.FindAsync(id);
 			if (student == null)
 				return NotFound();
+
+			// Show form with student data to edit
 			return View(student);
-		
 		}
+
 		[HttpPost]
-		public IActionResult Edit(int id, StudentClass student) 
+		public async Task<IActionResult> Edit(int id, StudentClass student)
 		{
 			if (id != student.StudentID)
 				return NotFound();
 
-			if (ModelState.IsValid) 
-			{ 
-					var existingStudent = students.FirstOrDefault(p => p.StudentID == id);
-				if (existingStudent == null)
-					return NotFound();
-
-				existingStudent.Name = student.Name;
-				existingStudent.Age = student.Age;
-				existingStudent.Course = student.Course;
-
-				return RedirectToAction("Index");
-			}
-			return View(student);
-	
-		}
-		//Delete
-		public IActionResult Delete(int id) 
-		{
-			var student = students.FirstOrDefault(p => p.StudentID == id);
-			if(student == null)
-				return NotFound();
-			return View(student);
-		}
-		[HttpPost, ActionName("Delete")]
-		public IActionResult DeleteConfirmed(int id) 
-		{
-			var student = students.FirstOrDefault(p => p.StudentID == id);
-			if (student != null) 
+			if (ModelState.IsValid)
 			{
-				students.Remove(student);
-			
+				try
+				{
+					// Update student data in DB
+					_context.Update(student);
+					await _context.SaveChangesAsync();
+				}
+				catch (DbUpdateConcurrencyException)
+				{
+					if (!StudentExists(student.StudentID))
+						return NotFound();
+					else
+						throw;
+				}
+				// Redirect to list after edit success
+				return RedirectToAction(nameof(Index));
 			}
-			return RedirectToAction("Index");
+			// If validation fails, show form again
+			return View(student);
+		}
+
+		public async Task<IActionResult> Delete(int? id)
+		{
+			if (id == null)
+				return NotFound();
+
+			// Get student to confirm delete
+			var student = await _context.Students.FirstOrDefaultAsync(m => m.StudentID == id);
+			if (student == null)
+				return NotFound();
+
+			// Show delete confirmation page
+			return View(student);
+		}
+
+		[HttpPost, ActionName("Delete")]
+		public async Task<IActionResult> DeleteConfirmed(int id)
+		{
+			var student = await _context.Students.FindAsync(id);
+
+			if (student != null)
+			{
+				_context.Students.Remove(student);
+				await _context.SaveChangesAsync();
+			}
+
+			// Redirect to list after delete
+			return RedirectToAction(nameof(Index));
+		}
+		private bool StudentExists(int id)
+		{
+			return _context.Students.Any(e => e.StudentID == id);
 		}
 	}
 }

@@ -1,32 +1,35 @@
-﻿@model IEnumerable<StudentInformationSystem.Models.StudentClass>
+﻿@model List<StudentInformationSystem.Models.StudentClass>
 
 <h1>Student List</h1>
-
 <table class="table">
-	<thead>
-		<tr>
-			<th>Student ID</th>
-			<th>Name</th>
-			<th>Age</th>
-			<th>Course</th>
-		</tr>
-	</thead>
-	<tbody>
-		
-		@foreach (var student in Model)
-		{
-			<tr>
-				<td>@student.StudentID</td>
-				<td>@student.Name</td>
-				<td>@student.Age</td>
-				<td>@student.Course</td>
-				<td>
-					<a asp-action="Edit" asp-route-id="@student.StudentID">Edit</a>
-					<a asp-action="Delete" asp-route-id="@student.StudentID">Delete</a>
-				</td>
-			</tr>	
-		}
-	</tbody> 
-</table>		
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
+            <th>Address</th>
+            <th>Contact Number</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.StudentID</td>
+                <td>@student.FullName</td>
+                <td>@student.DateOfBirth</td>
+                <td>@student.Gender</td>
+                <td>@student.Address</td>
+                <td>@student.ContactNumber</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@student.StudentID">Edit</a> |
+                    <a asp-action="Delete" asp-route-id=@student.StudentID>Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
 
-<a asp-action="Create" class="btn btn-primary">Create New Pet</a>
+</table>
+
+<a href="#"><a asp-action="RegisterStudent" class=" btn btn-primary">Register Student</a>
